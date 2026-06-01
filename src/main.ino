@@ -7,6 +7,7 @@
 #include "LedService.h"
 #include "WiFiService.h"
 #include "ApiServer.h"
+#include "CloudLogService.h"
 
 DeviceInfo deviceInfo;
 DeviceState deviceState;
@@ -14,6 +15,7 @@ AlertService alertService;
 SensorService sensorService(alertService);
 LedService ledService;
 WiFiService wifiService(deviceInfo);
+CloudLogService cloudLogService(deviceInfo);
 ApiServer apiServer(deviceInfo, deviceState, wifiService, ledService, sensorService);
 
 void setup() {
@@ -51,4 +53,5 @@ void loop() {
   wifiService.update(deviceState);
   sensorService.update(deviceState);
   ledService.updatePotControl(deviceState);
+  cloudLogService.update(deviceState);
 }

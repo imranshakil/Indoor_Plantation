@@ -47,3 +47,11 @@ constexpr int WATER_RAW_FULL = 1830;
 
 // ===================== API =====================
 constexpr uint16_t API_PORT = 80;
+
+
+// ===================== CLOUD / DJANGO API For Backups=====================
+constexpr const char* CLOUD_SENSOR_LOG_URL = "https://yourdomain.com/api/plantation/sensor-log";
+constexpr const char* CLOUD_EVENT_LOG_URL  = "https://yourdomain.com/api/plantation/event-log";
+constexpr const char* API_TOKEN = "CHANGE_THIS_SECRET_TOKEN";
+
+constexpr unsigned long CLOUD_SENSOR_SEND_INTERVAL_MS = 300000; // 5 minute
