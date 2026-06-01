@@ -8,9 +8,11 @@ WiFiService::WiFiService(DeviceInfo& deviceInfo) : deviceInfo(deviceInfo) {}
 void WiFiService::begin(DeviceState& state) {
   pinMode(WIFI_LED_PIN, OUTPUT);
   digitalWrite(WIFI_LED_PIN, LOW);
+ 
 
   startSetupHotspot();
   state.wifiConnected = false;
+  state.wifiLedMode = WIFI_AP_MODE;
 }
 
 void WiFiService::startSetupHotspot() {
@@ -34,6 +36,7 @@ bool WiFiService::provision(DeviceState& state, const String& ssid, const String
   Serial.println(ssid);
 
   WiFi.mode(WIFI_AP_STA);
+  state.wifiLedMode = WIFI_CONNECTING;
   WiFi.begin(ssid.c_str(), password.c_str());
 
   unsigned long startAttempt = millis();
@@ -47,6 +50,7 @@ bool WiFiService::provision(DeviceState& state, const String& ssid, const String
 
   if (WiFi.status() == WL_CONNECTED) {
     state.wifiConnected = true;
+    state.wifiLedMode = WIFI_CONNECTED;
     digitalWrite(WIFI_LED_PIN, HIGH);
 
     Serial.println("Home Wi-Fi connected!");
@@ -63,8 +67,9 @@ bool WiFiService::provision(DeviceState& state, const String& ssid, const String
     return true;
   }
 
-  state.wifiConnected = false;
-  digitalWrite(WIFI_LED_PIN, LOW);
+    state.wifiConnected = false;
+    state.wifiLedMode = WIFI_AP_MODE;
+    digitalWrite(WIFI_LED_PIN, LOW);
 
   Serial.println("Home Wi-Fi connection failed");
   return false;
@@ -79,20 +84,64 @@ void WiFiService::update(DeviceState& state) {
 }
 
 void WiFiService::updateWifiLed(DeviceState& state) {
-  if (state.wifiConnected && WiFi.status() == WL_CONNECTED) {
-    digitalWrite(WIFI_LED_PIN, HIGH);
-    return;
-  }
-
-  if (WiFi.softAPgetStationNum() > 0) {
-    digitalWrite(WIFI_LED_PIN, HIGH);
-    return;
-  }
 
   unsigned long now = millis();
-  if (now - lastWifiBlink >= WIFI_LED_BLINK_INTERVAL_MS) {
-    lastWifiBlink = now;
-    wifiLedState = !wifiLedState;
-    digitalWrite(WIFI_LED_PIN, wifiLedState ? HIGH : LOW);
+
+  // App connected to ESP hotspot
+  if (!state.wifiConnected &&
+      WiFi.softAPgetStationNum() > 0) {
+
+    state.wifiLedMode = WIFI_APP_CONNECTED;
+  }
+
+  switch (state.wifiLedMode) {
+
+    // ESP hotspot active
+    case WIFI_AP_MODE:
+
+      if (now - lastWifiBlink >= 700) {
+
+        lastWifiBlink = now;
+
+        wifiLedState = !wifiLedState;
+
+        digitalWrite(
+          WIFI_LED_PIN,
+          wifiLedState
+        );
+      }
+
+      break;
+
+    // Phone connected to hotspot
+    case WIFI_APP_CONNECTED:
+
+      digitalWrite(WIFI_LED_PIN, HIGH);
+
+      break;
+
+    // Connecting to home Wi-Fi
+    case WIFI_CONNECTING:
+
+      if (now - lastWifiBlink >= 150) {
+
+        lastWifiBlink = now;
+
+        wifiLedState = !wifiLedState;
+
+        digitalWrite(
+          WIFI_LED_PIN,
+          wifiLedState
+        );
+      }
+
+      break;
+
+    // Connected to home Wi-Fi
+    case WIFI_CONNECTED:
+
+      digitalWrite(WIFI_LED_PIN, HIGH);
+
+      break;
   }
 }
