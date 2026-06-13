@@ -36,7 +36,9 @@ bool WiFiService::provision(DeviceState& state, const String& ssid, const String
   Serial.println(ssid);
 
   WiFi.mode(WIFI_AP_STA);
-  state.wifiLedMode = WIFI_CONNECTING;
+  state.wifiLedMode = WIFI_PROVISIONED;
+  blinkStep = 0;
+  provisionSequenceDone = false;
   WiFi.begin(ssid.c_str(), password.c_str());
 
   unsigned long startAttempt = millis();
@@ -87,8 +89,9 @@ void WiFiService::updateWifiLed(DeviceState& state) {
 
   unsigned long now = millis();
 
-  // App connected to ESP hotspot
+  // Phone connected to ESP hotspot
   if (!state.wifiConnected &&
+      state.wifiLedMode == WIFI_AP_MODE &&
       WiFi.softAPgetStationNum() > 0) {
 
     state.wifiLedMode = WIFI_APP_CONNECTED;
@@ -96,48 +99,77 @@ void WiFiService::updateWifiLed(DeviceState& state) {
 
   switch (state.wifiLedMode) {
 
-    // ESP hotspot active
+    //------------------------------------------------
+    // AP MODE
+    //------------------------------------------------
     case WIFI_AP_MODE:
 
-      if (now - lastWifiBlink >= 700) {
+      if (now - lastWifiBlink >= 2000) {
 
         lastWifiBlink = now;
 
-        wifiLedState = !wifiLedState;
-
-        digitalWrite(
-          WIFI_LED_PIN,
-          wifiLedState
-        );
+        digitalWrite(WIFI_LED_PIN, HIGH);
+        delay(120);
+        digitalWrite(WIFI_LED_PIN, LOW);
       }
 
       break;
 
-    // Phone connected to hotspot
+    //------------------------------------------------
+    // APP CONNECTED
+    //------------------------------------------------
     case WIFI_APP_CONNECTED:
+
+      if (now - lastWifiBlink >= 2000) {
+
+        lastWifiBlink = now;
+
+        digitalWrite(WIFI_LED_PIN, HIGH);
+        delay(120);
+        digitalWrite(WIFI_LED_PIN, LOW);
+
+        delay(120);
+
+        digitalWrite(WIFI_LED_PIN, HIGH);
+        delay(120);
+        digitalWrite(WIFI_LED_PIN, LOW);
+      }
+
+      break;
+
+    //------------------------------------------------
+    // PROVISIONED
+    //------------------------------------------------
+    case WIFI_PROVISIONED:
+
+      if (!provisionSequenceDone) {
+
+        digitalWrite(WIFI_LED_PIN, HIGH);
+        delay(120);
+        digitalWrite(WIFI_LED_PIN, LOW);
+
+        delay(120);
+
+        digitalWrite(WIFI_LED_PIN, HIGH);
+        delay(120);
+        digitalWrite(WIFI_LED_PIN, LOW);
+
+        delay(120);
+
+        digitalWrite(WIFI_LED_PIN, HIGH);
+        delay(120);
+        digitalWrite(WIFI_LED_PIN, LOW);
+
+        provisionSequenceDone = true;
+      }
 
       digitalWrite(WIFI_LED_PIN, HIGH);
 
       break;
 
-    // Connecting to home Wi-Fi
-    case WIFI_CONNECTING:
-
-      if (now - lastWifiBlink >= 150) {
-
-        lastWifiBlink = now;
-
-        wifiLedState = !wifiLedState;
-
-        digitalWrite(
-          WIFI_LED_PIN,
-          wifiLedState
-        );
-      }
-
-      break;
-
-    // Connected to home Wi-Fi
+    //------------------------------------------------
+    // CONNECTED
+    //------------------------------------------------
     case WIFI_CONNECTED:
 
       digitalWrite(WIFI_LED_PIN, HIGH);
@@ -145,3 +177,5 @@ void WiFiService::updateWifiLed(DeviceState& state) {
       break;
   }
 }
+
+
