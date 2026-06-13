@@ -14,7 +14,9 @@ public:
   void update(DeviceState& state, bool force = false);
 
 private:
-  int calculateWaterPercent(int waterRaw) const;
+int calculateSoil1Percent(int raw) const;
+int calculateSoil2Percent(int raw) const;
+int calculateWaterPercent(int waterRaw) const;
 
   AlertService& alertService;
   DHT dht;
