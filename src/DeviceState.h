@@ -30,7 +30,7 @@ struct LedValues {
 enum WifiLedMode {
   WIFI_AP_MODE,
   WIFI_APP_CONNECTED,
-  WIFI_CONNECTING,
+  WIFI_PROVISIONED,
   WIFI_CONNECTED
 };
 
