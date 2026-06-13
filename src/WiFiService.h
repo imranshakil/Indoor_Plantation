@@ -18,5 +18,6 @@ private:
 
   DeviceInfo& deviceInfo;
   unsigned long lastWifiBlink = 0;
-  bool wifiLedState = false;
+  uint8_t blinkStep = 0;
+  bool provisionSequenceDone = false;
 };
