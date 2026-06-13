@@ -55,13 +55,14 @@ void SensorService::update(DeviceState& state, bool force) {
 }
 
 int SensorService::calculateWaterPercent(int waterRaw) const {
-  int percent = 0;
 
-  if (waterRaw <= WATER_RAW_MIDDLE) {
-    percent = map(waterRaw, WATER_RAW_EMPTY, WATER_RAW_MIDDLE, 0, 50);
-  } else {
-    percent = map(waterRaw, WATER_RAW_MIDDLE, WATER_RAW_FULL, 50, 100);
-  }
+  int percent = map(
+      waterRaw,
+      WATER_RAW_EMPTY,
+      WATER_RAW_FULL,
+      0,
+      100
+  );
 
   return constrain(percent, 0, 100);
 }
