@@ -8,8 +8,8 @@ void AlertService::begin() {
 }
 
 void AlertService::update(DeviceState& state) {
-  state.alerts.soil1Low = state.sensors.soil1 < SOIL_LOW_THRESHOLD;
-  state.alerts.soil2Low = state.sensors.soil2 < SOIL_LOW_THRESHOLD;
+  state.alerts.soil1Low = state.sensors.soil1 < SOIL_LOW_PERCENT;
+  state.alerts.soil2Low = state.sensors.soil2 < SOIL_LOW_PERCENT;
   state.alerts.waterLow = state.sensors.waterPercent <= WATER_LOW_PERCENT;
   state.alerts.temperatureHigh = state.sensors.temperature > TEMP_MAX_C;
   state.alerts.humidityHigh = state.sensors.humidity > HUMIDITY_MAX_PERCENT;
