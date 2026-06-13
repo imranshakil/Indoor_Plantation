@@ -25,8 +25,11 @@ void SensorService::update(DeviceState& state, bool force) {
 
   lastRead = now;
 
-  state.sensors.soil1 = analogRead(SOIL1_PIN);
-  state.sensors.soil2 = analogRead(SOIL2_PIN);
+  int soil1Raw = analogRead(SOIL1_PIN);
+  int soil2Raw = analogRead(SOIL2_PIN);
+
+  state.sensors.soil1 = calculateSoil1Percent(soil1Raw);
+  state.sensors.soil2 = calculateSoil2Percent(soil2Raw);
 
   int rawWater = analogRead(WATER_PIN);
   state.sensors.waterRaw = (state.sensors.waterRaw * 7 + rawWater) / 8;
@@ -59,6 +62,31 @@ int SensorService::calculateWaterPercent(int waterRaw) const {
   } else {
     percent = map(waterRaw, WATER_RAW_MIDDLE, WATER_RAW_FULL, 50, 100);
   }
+
+  return constrain(percent, 0, 100);
+}
+int SensorService::calculateSoil1Percent(int raw) const {
+
+  int percent = map(
+    raw,
+    SOIL1_RAW_DRY,
+    SOIL1_RAW_WET,
+    0,
+    100
+  );
+
+  return constrain(percent, 0, 100);
+}
+
+int SensorService::calculateSoil2Percent(int raw) const {
+
+  int percent = map(
+    raw,
+    SOIL2_RAW_DRY,
+    SOIL2_RAW_WET,
+    0,
+    100
+  );
 
   return constrain(percent, 0, 100);
 }
